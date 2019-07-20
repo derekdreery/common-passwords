@@ -1,4 +1,4 @@
-use phf_codegen::Set;
+use fst::SetBuilder;
 use std::env;
 use std::fs::File;
 use std::io::{self, prelude::*};
@@ -10,10 +10,10 @@ fn main() {
         Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap()).join("data/rockyou.txt.xz");
     let input = io::BufReader::new(XzDecoder::new(File::open(input_path).unwrap()));
 
-    let output_path = Path::new(&env::var("OUT_DIR").unwrap()).join("password_hash.rs");
-    let mut output = io::BufWriter::new(File::create(output_path).unwrap());
+    let output_path = Path::new(&env::var("OUT_DIR").unwrap()).join("password_hash.fst");
+    let output = io::BufWriter::new(File::create(output_path).unwrap());
 
-    let passwords = input
+    let mut passwords = input
         .split(b'\n')
         .filter_map(|line| {
             let line = line.unwrap();
@@ -31,15 +31,11 @@ fn main() {
         })
         .take(1_000_000)
         .collect::<Vec<_>>();
-    let mut gen: Set<&str> = Set::new();
+    passwords.sort();
+
+    let mut gen = SetBuilder::new(output).unwrap();
     for password in passwords.iter() {
-        gen.entry(password);
+        gen.insert(password).unwrap();
     }
-    //panic!("{:?}", passwords);
-    write!(
-        &mut output,
-        "static PASSWORDS: ::phf::Set<&'static str> = {};\n",
-        gen.build()
-    )
-    .unwrap();
+    gen.finish().unwrap();
 }
