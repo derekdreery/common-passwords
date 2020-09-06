@@ -14,9 +14,10 @@ crate-type = ["cdylib", "rlib"]
 debug = true
 
 [build-dependencies]
+fst = { version = "0.3.4", default-features = false }
 xz2 = "0.1"
-phf_codegen = { git = "https://github.com/sfackler/rust-phf" }
 
 [dependencies]
-phf = { git = "https://github.com/sfackler/rust-phf" }
+fst = { version = "0.3.4", default-features = false }
+lazy_static = "1.3"
 wasm-bindgen = "0.2.48"
